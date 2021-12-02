@@ -1,7 +1,9 @@
 import { DataTypes } from 'sequelize';
 import sequelize from 'config/db';
 
-const User = sequelize.define('User', {
+import TokensModel from './Tokens';
+
+const User = sequelize.define('Users', {
   userName: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -10,13 +12,9 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  accessToken: {
-    type: DataTypes.STRING,
-  },
-  refreshToken: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
 });
+
+User.hasMany(TokensModel);
+TokensModel.belongsTo(User);
 
 export default User;

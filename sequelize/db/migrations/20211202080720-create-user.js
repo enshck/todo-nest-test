@@ -16,12 +16,6 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      accessToken: {
-        type: Sequelize.STRING,
-      },
-      refreshToken: {
-        type: Sequelize.STRING,
-      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
@@ -32,7 +26,7 @@ module.exports = {
       },
     });
   },
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface) => {
     await queryInterface.dropTable('Users');
   },
 };
