@@ -1,9 +1,9 @@
-import { DataTypes } from 'sequelize';
+import { DataTypes, Model } from 'sequelize';
 import sequelize from 'config/db';
 
-import TokensModel from './Tokens';
+import { IUserModel } from 'interfaces/auth';
 
-const User = sequelize.define('Users', {
+const User = sequelize.define<Model<IUserModel>>('User', {
   userName: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -14,7 +14,6 @@ const User = sequelize.define('Users', {
   },
 });
 
-User.hasMany(TokensModel);
-TokensModel.belongsTo(User);
+User.sync();
 
 export default User;

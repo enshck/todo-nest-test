@@ -2,30 +2,20 @@ import { DataTypes, Model } from 'sequelize';
 import sequelize from 'config/db';
 
 import User from './User';
-import { ITokenModel } from 'interfaces/auth';
+import { ITodoModel } from 'interfaces/todoList';
 
-const Tokens = sequelize.define<Model<ITokenModel>>('Token', {
+const Todos = sequelize.define<Model<ITodoModel>>('Todo', {
   idOfUser: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-  device: {
+  value: {
     type: DataTypes.STRING,
     allowNull: false,
-  },
-  token: {
-    type: DataTypes.STRING,
   },
 });
 
-User.hasMany(Tokens, {
-  foreignKey: {
-    allowNull: false,
-    name: 'idOfUser',
-  },
-  onDelete: 'CASCADE',
-});
-Tokens.belongsTo(User, {
+User.hasMany(Todos, {
   foreignKey: {
     allowNull: false,
     name: 'idOfUser',
@@ -33,6 +23,14 @@ Tokens.belongsTo(User, {
   onDelete: 'CASCADE',
 });
 
-Tokens.sync();
+Todos.belongsTo(User, {
+  foreignKey: {
+    allowNull: false,
+    name: 'idOfUser',
+  },
+  onDelete: 'CASCADE',
+});
 
-export default Tokens;
+Todos.sync();
+
+export default Todos;
