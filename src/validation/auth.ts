@@ -1,6 +1,6 @@
 import Joi = require('joi');
 
 export const registrationSchema = Joi.object({
-  userName: Joi.string().trim().required(),
+  email: Joi.string().email().required(),
   password: Joi.string().trim().required(),
 });

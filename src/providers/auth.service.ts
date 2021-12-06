@@ -13,7 +13,7 @@ import jwt = require('jsonwebtoken');
 
 import Tokens from 'models/Tokens';
 import User from 'models/User';
-import createUserDto from 'dto/createUserDto';
+import createUserDto from 'dto/createUser.dto';
 import variables from 'config/variables';
 import { IAuthResult, IUserModel } from 'interfaces/auth';
 import getDevice from 'utils/getDevice';
@@ -23,11 +23,11 @@ class AuthService {
   private async getUser(
     @Body() body: createUserDto,
   ): Promise<Model<IUserModel> | null> {
-    const { userName } = body;
+    const { email } = body;
 
     const user = await User.findOne({
       where: {
-        userName,
+        email,
       },
     });
 
@@ -38,7 +38,7 @@ class AuthService {
     @Body() body: createUserDto,
     @Headers('user-agent') userAgent: string,
   ): Promise<IAuthResult> {
-    const { password, userName } = body;
+    const { password, email } = body;
     const { jwtEncryptionKey, tokenExpire } = variables;
     const existingUser = await this.getUser(body);
 
@@ -49,13 +49,13 @@ class AuthService {
     const hashOfPassword = await bcrypt.hash(password, 10);
 
     const userCreateResult = await User.create({
-      userName,
+      email,
       password: hashOfPassword,
     });
 
     const userId = userCreateResult.getDataValue('id');
 
-    const token = jwt.sign({ userName }, jwtEncryptionKey, {
+    const token = jwt.sign({ email }, jwtEncryptionKey, {
       expiresIn: tokenExpire,
     });
 
@@ -72,7 +72,7 @@ class AuthService {
     });
 
     return {
-      userName,
+      email,
       token,
     };
   }
@@ -81,7 +81,7 @@ class AuthService {
     @Body() body: createUserDto,
     @Headers('user-agent') userAgent: string,
   ): Promise<IAuthResult> {
-    const { password, userName } = body;
+    const { password, email } = body;
     const { jwtEncryptionKey, tokenExpire } = variables;
 
     const user = await this.getUser(body);
@@ -99,7 +99,7 @@ class AuthService {
       throw new HttpException('Invalid Credentials', HttpStatus.UNAUTHORIZED);
     }
 
-    const token = jwt.sign({ userName }, jwtEncryptionKey, {
+    const token = jwt.sign({ email }, jwtEncryptionKey, {
       expiresIn: tokenExpire,
     });
 
@@ -132,7 +132,7 @@ class AuthService {
 
     return {
       token,
-      userName,
+      email,
     };
   }
 

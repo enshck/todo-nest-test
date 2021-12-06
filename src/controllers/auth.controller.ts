@@ -4,7 +4,7 @@ import AuthService from 'providers/auth.service';
 import { controllerPaths, authPaths } from 'const/routes';
 import { registrationSchema } from 'validation/auth';
 import JoiValidationPipe from 'pipes/joiValidation.pipe';
-import createUserDto from 'dto/createUserDto';
+import createUserDto from 'dto/createUser.dto';
 import { IAuthResult } from 'interfaces/auth';
 
 @Controller(controllerPaths.AUTH)

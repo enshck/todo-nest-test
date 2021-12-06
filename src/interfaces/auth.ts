@@ -1,17 +1,17 @@
 export interface IAuthResult {
-  userName: string;
+  email: string;
   token: string;
 }
 
 export interface IUserModel {
-  id?: number;
-  userName: string;
+  id?: string;
+  email: string;
   password: string;
 }
 
 export interface ITokenModel {
-  id?: number;
-  idOfUser: number;
+  id?: string;
+  idOfUser: string;
   device: string;
   token: string;
   User?: IUserModel;

@@ -5,8 +5,14 @@ import User from './User';
 import { ITokenModel } from 'interfaces/auth';
 
 const Tokens = sequelize.define<Model<ITokenModel>>('Token', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    allowNull: false,
+    primaryKey: true,
+  },
   idOfUser: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
     allowNull: false,
   },
   device: {

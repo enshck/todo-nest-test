@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 
-import { AppModule } from './app.module';
-import variables from './config/variables';
+import { AppModule } from 'modules/app.module';
+import variables from 'config/variables';
 import 'config/db';
 
 async function bootstrap() {

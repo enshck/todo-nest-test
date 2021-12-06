@@ -4,7 +4,13 @@ import sequelize from 'config/db';
 import { IUserModel } from 'interfaces/auth';
 
 const User = sequelize.define<Model<IUserModel>>('User', {
-  userName: {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    allowNull: false,
+    primaryKey: true,
+  },
+  email: {
     type: DataTypes.STRING,
     allowNull: false,
   },

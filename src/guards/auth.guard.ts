@@ -29,7 +29,7 @@ class AuthGuard implements CanActivate {
 
     const idOfUser = existingToken.getDataValue('idOfUser');
 
-    request.body.userId = idOfUser;
+    request.userId = idOfUser;
 
     return true;
   }

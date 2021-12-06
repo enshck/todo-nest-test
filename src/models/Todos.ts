@@ -5,12 +5,22 @@ import User from './User';
 import { ITodoModel } from 'interfaces/todoList';
 
 const Todos = sequelize.define<Model<ITodoModel>>('Todo', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    allowNull: false,
+    primaryKey: true,
+  },
   idOfUser: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
     allowNull: false,
   },
   value: {
     type: DataTypes.STRING,
+    allowNull: false,
+  },
+  scheduleAt: {
+    type: DataTypes.DATE,
     allowNull: false,
   },
 });
