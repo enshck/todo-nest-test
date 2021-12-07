@@ -1,46 +1,32 @@
-import { DataTypes, Model } from 'sequelize';
-import sequelize from 'config/db';
+import {
+  Table,
+  Column,
+  Model,
+  IsUUID,
+  PrimaryKey,
+  BelongsTo,
+} from 'sequelize-typescript';
 
 import User from './User';
-import { ITodoModel } from 'interfaces/todoList';
 
-const Todos = sequelize.define<Model<ITodoModel>>('Todo', {
-  id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    allowNull: false,
-    primaryKey: true,
-  },
-  idOfUser: {
-    type: DataTypes.UUID,
-    allowNull: false,
-  },
-  value: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  scheduleAt: {
-    type: DataTypes.DATE,
-    allowNull: false,
-  },
-});
+@Table
+export default class Todo extends Model {
+  @IsUUID(4)
+  @PrimaryKey
+  @Column
+  id: string;
 
-User.hasMany(Todos, {
-  foreignKey: {
-    allowNull: false,
-    name: 'idOfUser',
-  },
-  onDelete: 'CASCADE',
-});
+  @IsUUID(4)
+  @BelongsTo(() => User, {
+    foreignKey: 'id',
+    onDelete: 'CASCADE',
+  })
+  @Column
+  idOfUser: string;
 
-Todos.belongsTo(User, {
-  foreignKey: {
-    allowNull: false,
-    name: 'idOfUser',
-  },
-  onDelete: 'CASCADE',
-});
+  @Column
+  value: string;
 
-Todos.sync();
-
-export default Todos;
+  @Column
+  scheduleAt: Date;
+}

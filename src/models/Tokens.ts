@@ -1,44 +1,34 @@
-import { DataTypes, Model } from 'sequelize';
-import sequelize from 'config/db';
+import {
+  Table,
+  Column,
+  Model,
+  IsUUID,
+  PrimaryKey,
+  BelongsTo,
+  AllowNull,
+} from 'sequelize-typescript';
 
 import User from './User';
-import { ITokenModel } from 'interfaces/auth';
 
-const Tokens = sequelize.define<Model<ITokenModel>>('Token', {
-  id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    allowNull: false,
-    primaryKey: true,
-  },
-  idOfUser: {
-    type: DataTypes.UUID,
-    allowNull: false,
-  },
-  device: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  token: {
-    type: DataTypes.STRING,
-  },
-});
+@Table
+export default class Todo extends Model {
+  @IsUUID(4)
+  @PrimaryKey
+  @Column
+  id: string;
 
-User.hasMany(Tokens, {
-  foreignKey: {
-    allowNull: false,
-    name: 'idOfUser',
-  },
-  onDelete: 'CASCADE',
-});
-Tokens.belongsTo(User, {
-  foreignKey: {
-    allowNull: false,
-    name: 'idOfUser',
-  },
-  onDelete: 'CASCADE',
-});
+  @IsUUID(4)
+  @BelongsTo(() => User, {
+    foreignKey: 'id',
+    onDelete: 'CASCADE',
+  })
+  @Column
+  idOfUser: string;
 
-Tokens.sync();
+  @Column
+  device: string;
 
-export default Tokens;
+  @Column
+  @AllowNull(true)
+  token: string;
+}

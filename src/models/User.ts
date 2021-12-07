@@ -1,25 +1,33 @@
-import { DataTypes, Model } from 'sequelize';
-import sequelize from 'config/db';
+import {
+  Table,
+  Column,
+  Model,
+  IsUUID,
+  PrimaryKey,
+  HasMany,
+} from 'sequelize-typescript';
 
-import { IUserModel } from 'interfaces/auth';
+import Todo from './Todos';
+import Token from './Tokens';
 
-const User = sequelize.define<Model<IUserModel>>('User', {
-  id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    allowNull: false,
-    primaryKey: true,
-  },
-  email: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  password: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-});
+@Table
+export default class User extends Model {
+  @IsUUID(4)
+  @PrimaryKey
+  @Column
+  id: string;
 
-User.sync();
+  @Column
+  email: string;
 
-export default User;
+  @Column
+  password: string;
+
+  @HasMany(() => Todo)
+  @Column
+  todos: Todo[];
+
+  @HasMany(() => Token)
+  @Column
+  tokens: Token[];
+}
