@@ -2,7 +2,13 @@ import { Module } from '@nestjs/common';
 import { BullModule as Bull } from '@nestjs/bull';
 
 import variables from 'config/variables';
-import { BullService, SendEmailConsumer } from 'providers/bull.service';
+import {
+  BullService,
+  SendEmailConsumer,
+  CreateJobListConsumer,
+} from 'providers/bull.service';
+import { queueTypes } from 'const/queueBull';
+import NodeMailer from './nodemailer.module';
 
 @Module({
   imports: [
@@ -15,10 +21,14 @@ import { BullService, SendEmailConsumer } from 'providers/bull.service';
       },
     }),
     Bull.registerQueue({
-      name: 'SEND_EMAILS',
+      name: queueTypes.SEND_EMAILS,
     }),
+    Bull.registerQueue({
+      name: queueTypes.CREATE_LIST,
+    }),
+    NodeMailer,
   ],
-  providers: [BullService, SendEmailConsumer],
+  providers: [BullService, SendEmailConsumer, CreateJobListConsumer],
   exports: [BullService],
 })
 export default class BullModule {}

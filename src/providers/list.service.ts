@@ -27,7 +27,7 @@ class ListService {
       where: {
         idOfUser: userId,
       },
-      attributes: ['id', 'value'],
+      attributes: ['id', 'value', 'scheduleAt'],
       order: ['id'],
     });
 

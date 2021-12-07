@@ -14,4 +14,6 @@ export default {
   redisPort: process.env.REDIS_PORT,
   redisPassword: process.env.REDIS_PASSWORD,
   redisUser: process.env.REDIS_USER,
+  emailSendUser: process.env.EMAIL_SEND_USER,
+  emailSendPassword: process.env.EMAIL_SEND_PASSWORD,
 };

@@ -1,34 +1,72 @@
-import { BadRequestException } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
 import { Queue, Job } from 'bull';
 import { InjectQueue, Processor, Process } from '@nestjs/bull';
+import moment = require('moment');
+import { Op } from 'sequelize';
 
-import UserModel from 'models/User';
+import Todos from 'models/Todos';
+import { queueTypes } from 'const/queueBull';
+import { NodeMailerService } from 'providers/nodemailer.service';
 
 @Injectable()
 export class BullService {
-  constructor(@InjectQueue('SEND_EMAILS') private sendEmailsQueue: Queue) {
+  constructor(
+    @InjectQueue(queueTypes.SEND_EMAILS) private sendEmailsQueue: Queue,
+    @InjectQueue(queueTypes.CREATE_LIST) private createListQueue: Queue,
+  ) {
     this.sendEmailsQueue = sendEmailsQueue;
-    // const initJobs = async () => {
-    //   const repeatableJobs = await sendEmailsQueue.getRepeatableJobs();
-    //   repeatableJobs.map((elem) => {
-    //     sendEmailsQueue.removeRepeatableByKey(elem.key);
-    //   });
-    //   const allUsers = await UserModel.findAll();
-    //   const jobs = allUsers.map((elem: any) => ({
-    //     data: {
-    //       userEmail: elem?.email,
-    //     },
-    //     opts: {
-    //       removeOnComplete: true,
-    //       repeat: {
-    //         cron: '00 15 * * *',
-    //       },
-    //     },
-    //   }));
-    //   sendEmailsQueue.addBulk(jobs);
-    // };
-    // initJobs();
+
+    const initRepeatableJob = async () => {
+      await this.createListQueue.empty();
+
+      await this.createListQueue.add(
+        {},
+        {
+          repeat: {
+            cron: '00 00 * * *',
+          },
+        },
+      );
+    };
+
+    const initJobsForToday = async () => {
+      await this.sendEmailsQueue.empty();
+
+      const todosData = await Todos.findAll({
+        where: {
+          scheduleAt: {
+            [Op.gt]: moment().format('YYYY-MM-DD HH:mm'),
+            [Op.lte]: moment().format('YYYY-MM-DD 23:59'),
+          },
+        },
+        include: ['User'],
+      });
+
+      const dataForBulkCreate = todosData.map((elem) => {
+        const userEmail = elem.getDataValue('User')?.email;
+        const todoId = elem.getDataValue('id');
+        const scheduleAt = elem.getDataValue('scheduleAt');
+        const delay = +new Date(scheduleAt) - +new Date();
+
+        return {
+          data: {
+            userEmail,
+            todoId,
+          },
+          opts: {
+            removeOnComplete: true,
+            removeOnFail: true,
+            jobId: todoId,
+            delay,
+          },
+        };
+      });
+
+      this.sendEmailsQueue.addBulk(dataForBulkCreate);
+    };
+
+    initRepeatableJob();
+    initJobsForToday();
   }
 
   async createJob(userEmail: string, todoId: string, scheduleAt: string) {
@@ -65,10 +103,76 @@ export class BullService {
   }
 }
 
-@Processor('SEND_EMAILS')
+interface IJobData {
+  userEmail: string;
+  todoId: string;
+}
+
+@Processor(queueTypes.SEND_EMAILS)
 export class SendEmailConsumer {
+  constructor(private readonly nodeMailerService: NodeMailerService) {}
   @Process()
-  async sendEmails(job: Job<unknown>) {
-    console.log(job.data, 'delay');
+  async sendEmails(job: Job<IJobData>) {
+    const { todoId, userEmail } = job?.data;
+
+    if (!todoId || !userEmail) {
+      return;
+    }
+
+    const todo = await Todos.findOne({
+      where: {
+        id: todoId,
+      },
+    });
+
+    const todoValue = todo.getDataValue('value');
+
+    console.log('Sending email...');
+
+    await this.nodeMailerService.sendTodoElement(userEmail, todoValue);
+
+    console.log('Email has been sended');
+  }
+}
+
+@Processor(queueTypes.CREATE_LIST)
+export class CreateJobListConsumer {
+  constructor(
+    @InjectQueue(queueTypes.SEND_EMAILS) private sendEmailsQueue: Queue,
+  ) {}
+
+  @Process()
+  async createJobList() {
+    const todosData = await Todos.findAll({
+      where: {
+        scheduleAt: {
+          [Op.gt]: moment().format('YYYY-MM-DD 00:00'),
+          [Op.lte]: moment().format('YYYY-MM-DD 23:59'),
+        },
+      },
+      include: ['User'],
+    });
+
+    const dataForBulkCreate = todosData.map((elem) => {
+      const userEmail = elem.getDataValue('User')?.email;
+      const todoId = elem.getDataValue('id');
+      const scheduleAt = elem.getDataValue('scheduleAt');
+      const delay = +new Date(scheduleAt) - +new Date();
+
+      return {
+        data: {
+          userEmail,
+          todoId,
+        },
+        opts: {
+          removeOnComplete: true,
+          removeOnFail: true,
+          jobId: todoId,
+          delay,
+        },
+      };
+    });
+
+    this.sendEmailsQueue.addBulk(dataForBulkCreate);
   }
 }
