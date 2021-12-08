@@ -23,16 +23,16 @@ import getDevice from 'utils/getDevice';
 @Injectable()
 class AuthService {
   constructor(
-    @Inject(dbTables.USER_TABLE) private userRepository: typeof User,
+    @Inject(dbTables.USER_TABLE) private userTable: typeof User,
     @Inject(dbTables.TOKEN_TABLE)
-    private tokenRepository: typeof Token,
+    private tokenTable: typeof Token,
   ) {}
   private async getUser(
     @Body() body: createUserDto,
   ): Promise<Model<IUserModel> | null> {
     const { email } = body;
 
-    const user = await this.userRepository.findOne({
+    const user = await this.userTable.findOne({
       where: {
         email,
       },
@@ -55,7 +55,7 @@ class AuthService {
 
     const hashOfPassword = await bcrypt.hash(password, 10);
 
-    const userCreateResult = await this.userRepository.create({
+    const userCreateResult = await this.userTable.create({
       email,
       password: hashOfPassword,
     });
@@ -72,7 +72,7 @@ class AuthService {
       throw new BadRequestException('Unknown device');
     }
 
-    await this.tokenRepository.create({
+    await this.tokenTable.create({
       idOfUser: userId,
       device: device,
       token: token,
@@ -118,7 +118,7 @@ class AuthService {
 
     const idOfUser = user.getDataValue('id');
 
-    const existingToken = await this.tokenRepository.findOne({
+    const existingToken = await this.tokenTable.findOne({
       where: {
         idOfUser,
         device,
@@ -130,7 +130,7 @@ class AuthService {
         token,
       });
     } else {
-      await this.tokenRepository.create({
+      await this.tokenTable.create({
         idOfUser,
         device: device,
         token: token,
@@ -144,7 +144,7 @@ class AuthService {
   }
 
   async logout(token: string): Promise<string> {
-    const existingToken = await this.tokenRepository.findOne({
+    const existingToken = await this.tokenTable.findOne({
       where: {
         token,
       },

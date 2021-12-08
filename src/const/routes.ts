@@ -13,5 +13,5 @@ export const listPaths = {
   GET_LIST: 'getList',
   UPDATE_ELEMENT: 'updateElement',
   CREATE_ELEMENT: 'createElement',
-  DELETE_ELEMENT: 'deleteELement',
+  DELETE_ELEMENT: 'deleteElement',
 };

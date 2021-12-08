@@ -15,7 +15,7 @@ import { dbTables } from 'const/dbTables';
 class AuthGuard implements CanActivate {
   constructor(
     @Inject(dbTables.TOKEN_TABLE)
-    private tokenRepository: typeof Token,
+    private tokenTable: typeof Token,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -23,7 +23,7 @@ class AuthGuard implements CanActivate {
 
     jwt.verify(token, variables.jwtEncryptionKey);
 
-    const existingToken = await this.tokenRepository.findOne({
+    const existingToken = await this.tokenTable.findOne({
       where: {
         token,
       },

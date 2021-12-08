@@ -19,9 +19,9 @@ import { ICreatedElementResult } from 'controllers/list.controller';
 @Injectable()
 class ListService {
   constructor(
-    @Inject(dbTables.USER_TABLE) private userRepository: typeof User,
+    @Inject(dbTables.USER_TABLE) private userTable: typeof User,
     @Inject(dbTables.TODO_TABLE)
-    private todoRepository: typeof Todo,
+    private todoTable: typeof Todo,
   ) {}
   async getList(@Req() req): Promise<IGetListResult> {
     const userId = req?.userId;
@@ -30,7 +30,7 @@ class ListService {
       throw new InternalServerErrorException('User doesnt provided');
     }
 
-    const listOfUsers: any = await this.todoRepository.findAll({
+    const listOfUsers: any = await this.todoTable.findAll({
       where: {
         idOfUser: userId,
       },
@@ -50,13 +50,13 @@ class ListService {
     const userId = req?.userId;
     const { value, scheduleAt } = body;
 
-    const todo = await this.todoRepository.create({
+    const todo = await this.todoTable.create({
       idOfUser: userId,
       value,
       scheduleAt,
     });
 
-    const user = await this.userRepository.findOne({
+    const user = await this.userTable.findOne({
       where: {
         id: userId,
       },
@@ -76,7 +76,7 @@ class ListService {
     const userId = req?.userId;
     const { value, id, scheduleAt } = body;
 
-    const element = await this.todoRepository.findOne({
+    const element = await this.todoTable.findOne({
       where: {
         idOfUser: userId,
         id,
@@ -107,7 +107,7 @@ class ListService {
       throw new BadRequestException('id doesnt provided');
     }
 
-    const element = await this.todoRepository.findOne({
+    const element = await this.todoTable.findOne({
       where: {
         idOfUser: userId,
         id,
