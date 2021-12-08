@@ -1,9 +1,10 @@
 import { Sequelize } from 'sequelize-typescript';
 import variables from 'config/variables';
 
-import Todo from 'models/Todos';
+import Todo from 'models/Todo';
 import User from 'models/User';
-import Tokens from 'models/Tokens';
+import Token from 'models/Token';
+import { dbTables } from 'const/dbTables';
 
 export const databaseServices = [
   {
@@ -15,9 +16,21 @@ export const databaseServices = [
         username: variables.dbUser,
         password: variables.dbPassword,
       });
-      sequelize.addModels([Todo, User, Tokens]);
+      sequelize.addModels([User, Todo, Token]);
       await sequelize.sync();
       return sequelize;
     },
+  },
+  {
+    provide: dbTables.TODO_TABLE,
+    useValue: Todo,
+  },
+  {
+    provide: dbTables.USER_TABLE,
+    useValue: User,
+  },
+  {
+    provide: dbTables.TOKEN_TABLE,
+    useValue: Token,
   },
 ];

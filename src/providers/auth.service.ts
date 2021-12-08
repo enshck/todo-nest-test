@@ -6,13 +6,15 @@ import {
   NotFoundException,
   HttpException,
   HttpStatus,
+  Inject,
 } from '@nestjs/common';
 import { Model } from 'sequelize';
 import bcrypt = require('bcrypt');
 import jwt = require('jsonwebtoken');
 
-import Tokens from 'models/Tokens';
+import Token from 'models/Token';
 import User from 'models/User';
+import { dbTables } from 'const/dbTables';
 import createUserDto from 'dto/createUser.dto';
 import variables from 'config/variables';
 import { IAuthResult, IUserModel } from 'interfaces/auth';
@@ -20,12 +22,17 @@ import getDevice from 'utils/getDevice';
 
 @Injectable()
 class AuthService {
+  constructor(
+    @Inject(dbTables.USER_TABLE) private userRepository: typeof User,
+    @Inject(dbTables.TOKEN_TABLE)
+    private tokenRepository: typeof Token,
+  ) {}
   private async getUser(
     @Body() body: createUserDto,
   ): Promise<Model<IUserModel> | null> {
     const { email } = body;
 
-    const user = await User.findOne({
+    const user = await this.userRepository.findOne({
       where: {
         email,
       },
@@ -48,7 +55,7 @@ class AuthService {
 
     const hashOfPassword = await bcrypt.hash(password, 10);
 
-    const userCreateResult = await User.create({
+    const userCreateResult = await this.userRepository.create({
       email,
       password: hashOfPassword,
     });
@@ -65,7 +72,7 @@ class AuthService {
       throw new BadRequestException('Unknown device');
     }
 
-    await Tokens.create({
+    await this.tokenRepository.create({
       idOfUser: userId,
       device: device,
       token: token,
@@ -111,7 +118,7 @@ class AuthService {
 
     const idOfUser = user.getDataValue('id');
 
-    const existingToken = await Tokens.findOne({
+    const existingToken = await this.tokenRepository.findOne({
       where: {
         idOfUser,
         device,
@@ -123,7 +130,7 @@ class AuthService {
         token,
       });
     } else {
-      await Tokens.create({
+      await this.tokenRepository.create({
         idOfUser,
         device: device,
         token: token,
@@ -137,7 +144,7 @@ class AuthService {
   }
 
   async logout(token: string): Promise<string> {
-    const existingToken = await Tokens.findOne({
+    const existingToken = await this.tokenRepository.findOne({
       where: {
         token,
       },

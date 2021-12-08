@@ -3,21 +3,27 @@ import {
   CanActivate,
   ExecutionContext,
   NotFoundException,
+  Inject,
 } from '@nestjs/common';
 import jwt = require('jsonwebtoken');
 
 import variables from 'config/variables';
-import Token from 'models/Tokens';
+import Token from 'models/Token';
+import { dbTables } from 'const/dbTables';
 
 @Injectable()
 class AuthGuard implements CanActivate {
+  constructor(
+    @Inject(dbTables.TOKEN_TABLE)
+    private tokenRepository: typeof Token,
+  ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = request.headers['authorization'];
 
     jwt.verify(token, variables.jwtEncryptionKey);
 
-    const existingToken = await Token.findOne({
+    const existingToken = await this.tokenRepository.findOne({
       where: {
         token,
       },

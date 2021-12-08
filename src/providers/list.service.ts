@@ -5,17 +5,24 @@ import {
   NotFoundException,
   Body,
   BadRequestException,
+  Inject,
 } from '@nestjs/common';
 
-import Todos from 'models/Todos';
+import Todo from 'models/Todo';
+import User from 'models/User';
+import { dbTables } from 'const/dbTables';
 import { IGetListResult } from 'interfaces/todoList';
 import CreateElementDto from 'dto/createElement.dto';
 import { IMessageResponse } from 'interfaces/common';
-import User from 'models/User';
 import { ICreatedElementResult } from 'controllers/list.controller';
 
 @Injectable()
 class ListService {
+  constructor(
+    @Inject(dbTables.USER_TABLE) private userRepository: typeof User,
+    @Inject(dbTables.TODO_TABLE)
+    private todoRepository: typeof Todo,
+  ) {}
   async getList(@Req() req): Promise<IGetListResult> {
     const userId = req?.userId;
 
@@ -23,7 +30,7 @@ class ListService {
       throw new InternalServerErrorException('User doesnt provided');
     }
 
-    const listOfUsers: any = await Todos.findAll({
+    const listOfUsers: any = await this.todoRepository.findAll({
       where: {
         idOfUser: userId,
       },
@@ -43,13 +50,13 @@ class ListService {
     const userId = req?.userId;
     const { value, scheduleAt } = body;
 
-    const todo = await Todos.create({
+    const todo = await this.todoRepository.create({
       idOfUser: userId,
       value,
       scheduleAt,
     });
 
-    const user = await User.findOne({
+    const user = await this.userRepository.findOne({
       where: {
         id: userId,
       },
@@ -69,7 +76,7 @@ class ListService {
     const userId = req?.userId;
     const { value, id, scheduleAt } = body;
 
-    const element = await Todos.findOne({
+    const element = await this.todoRepository.findOne({
       where: {
         idOfUser: userId,
         id,
@@ -100,7 +107,7 @@ class ListService {
       throw new BadRequestException('id doesnt provided');
     }
 
-    const element = await Todos.findOne({
+    const element = await this.todoRepository.findOne({
       where: {
         idOfUser: userId,
         id,

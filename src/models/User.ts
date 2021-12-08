@@ -5,15 +5,18 @@ import {
   IsUUID,
   PrimaryKey,
   HasMany,
+  Default,
 } from 'sequelize-typescript';
+import { UUIDV4 } from 'sequelize';
 
-import Todo from './Todos';
-import Token from './Tokens';
+import Todo from './Todo';
+import Token from './Token';
 
 @Table
 export default class User extends Model {
   @IsUUID(4)
   @PrimaryKey
+  @Default(UUIDV4)
   @Column
   id: string;
 
@@ -24,10 +27,8 @@ export default class User extends Model {
   password: string;
 
   @HasMany(() => Todo)
-  @Column
-  todos: Todo[];
+  Todos: Todo[];
 
   @HasMany(() => Token)
-  @Column
-  tokens: Token[];
+  Tokens: Token[];
 }

@@ -5,7 +5,10 @@ import {
   IsUUID,
   PrimaryKey,
   BelongsTo,
+  ForeignKey,
+  Default,
 } from 'sequelize-typescript';
+import { UUIDV4 } from 'sequelize';
 
 import User from './User';
 
@@ -13,20 +16,22 @@ import User from './User';
 export default class Todo extends Model {
   @IsUUID(4)
   @PrimaryKey
+  @Default(UUIDV4)
   @Column
   id: string;
-
-  @IsUUID(4)
-  @BelongsTo(() => User, {
-    foreignKey: 'id',
-    onDelete: 'CASCADE',
-  })
-  @Column
-  idOfUser: string;
 
   @Column
   value: string;
 
   @Column
   scheduleAt: Date;
+
+  @ForeignKey(() => User)
+  @Column
+  idOfUser: string;
+
+  @BelongsTo(() => User, {
+    onDelete: 'CASCADE',
+  })
+  User: User;
 }

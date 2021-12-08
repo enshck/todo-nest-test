@@ -7,6 +7,6 @@ import NodeMailer from './nodemailer.module';
 import DBModule from './database.module';
 
 @Module({
-  imports: [AuthModule, ListModule, BullModule, NodeMailer, DBModule],
+  imports: [DBModule, AuthModule, ListModule, BullModule, NodeMailer],
 })
 export class AppModule {}

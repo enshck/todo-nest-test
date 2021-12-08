@@ -10,14 +10,13 @@ import {
 import { queueTypes } from 'const/queueBull';
 import NodeMailer from './nodemailer.module';
 
+import DatabaseModule from './database.module';
 @Module({
   imports: [
     Bull.forRoot({
       redis: {
         host: variables.redisUrl,
         port: +variables.redisPort,
-        password: variables.redisPassword,
-        username: variables.redisUser,
       },
     }),
     Bull.registerQueue({
@@ -27,6 +26,7 @@ import NodeMailer from './nodemailer.module';
       name: queueTypes.CREATE_LIST,
     }),
     NodeMailer,
+    DatabaseModule,
   ],
   providers: [BullService, SendEmailConsumer, CreateJobListConsumer],
   exports: [BullService],
