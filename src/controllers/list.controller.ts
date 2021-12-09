@@ -137,7 +137,7 @@ class ListController {
 
     const isSameDate = moment(scheduleAt).isSame(moment(), 'date');
 
-    if (isSameDate) {
+    if (isSameDate && moment(scheduleAt).isAfter(moment())) {
       await this.bullService.updateJob(userEmail, todoId, scheduleAt);
     }
 

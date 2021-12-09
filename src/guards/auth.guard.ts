@@ -4,6 +4,7 @@ import {
   ExecutionContext,
   NotFoundException,
   Inject,
+  UnauthorizedException,
 } from '@nestjs/common';
 import jwt = require('jsonwebtoken');
 
@@ -21,7 +22,11 @@ class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const token = request.headers['authorization'];
 
-    jwt.verify(token, variables.jwtEncryptionKey);
+    try {
+      jwt.verify(token, variables.jwtEncryptionKey);
+    } catch (err) {
+      throw new UnauthorizedException(err?.message ?? 'Invalid Token');
+    }
 
     const existingToken = await this.tokenTable.findOne({
       where: {

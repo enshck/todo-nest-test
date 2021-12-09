@@ -9,8 +9,6 @@ import {
 } from 'providers/bull.service';
 import { queueTypes } from 'const/queueBull';
 import NodeMailer from './nodemailer.module';
-
-import DatabaseModule from './database.module';
 @Module({
   imports: [
     Bull.forRoot({
@@ -26,7 +24,6 @@ import DatabaseModule from './database.module';
       name: queueTypes.CREATE_LIST,
     }),
     NodeMailer,
-    DatabaseModule,
   ],
   providers: [BullService, SendEmailConsumer, CreateJobListConsumer],
   exports: [BullService],
