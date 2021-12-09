@@ -23,14 +23,23 @@ export const databaseServices = [
   },
   {
     provide: dbTables.TODO_TABLE,
-    useValue: Todo,
+    useFactory: async () => {
+      return Todo;
+    },
+    inject: ['SEQUELIZE'],
   },
   {
     provide: dbTables.USER_TABLE,
-    useValue: User,
+    useFactory: async () => {
+      return User;
+    },
+    inject: ['SEQUELIZE'],
   },
   {
     provide: dbTables.TOKEN_TABLE,
-    useValue: Token,
+    useFactory: async () => {
+      return Token;
+    },
+    inject: ['SEQUELIZE'],
   },
 ];

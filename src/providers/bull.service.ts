@@ -2,7 +2,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import { Queue, Job } from 'bull';
 import { InjectQueue, Processor, Process } from '@nestjs/bull';
 import moment = require('moment');
-import { Op, Sequelize } from 'sequelize';
+import { Op } from 'sequelize';
 
 import Todo from 'models/Todo';
 import { dbTables } from 'const/dbTables';
@@ -15,7 +15,6 @@ export class BullService {
     @InjectQueue(queueTypes.SEND_EMAILS) private sendEmailsQueue: Queue,
     @InjectQueue(queueTypes.CREATE_LIST) private createListQueue: Queue,
     @Inject(dbTables.TODO_TABLE) private todoRepository: typeof Todo,
-    @Inject('SEQUELIZE') private _: Sequelize,
   ) {
     this.sendEmailsQueue = sendEmailsQueue;
     const initRepeatableJob = async () => {
