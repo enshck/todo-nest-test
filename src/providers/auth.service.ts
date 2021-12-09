@@ -158,6 +158,16 @@ class AuthService {
 
     return 'User logouted';
   }
+
+  async removeUser(email: string) {
+    const user = await this.userTable.findOne({
+      where: {
+        email,
+      },
+    });
+
+    await user.destroy();
+  }
 }
 
 export default AuthService;
