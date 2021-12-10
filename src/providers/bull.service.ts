@@ -15,8 +15,9 @@ export class BullService {
     @InjectQueue(queueTypes.SEND_EMAILS) private sendEmailsQueue: Queue,
     @InjectQueue(queueTypes.CREATE_LIST) private createListQueue: Queue,
     @Inject(dbTables.TODO_TABLE) private todoRepository: typeof Todo,
-  ) {
-    this.sendEmailsQueue = sendEmailsQueue;
+  ) {}
+
+  async onApplicationBootstrap() {
     const initRepeatableJob = async () => {
       // init job for adding jobs for current day
       await this.createListQueue.empty();
