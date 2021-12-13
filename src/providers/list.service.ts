@@ -7,6 +7,8 @@ import {
   BadRequestException,
   Inject,
 } from '@nestjs/common';
+import { Op } from 'sequelize';
+import moment = require('moment');
 
 import Todo from 'models/Todo';
 import User from 'models/User';
@@ -14,7 +16,10 @@ import { dbTables } from 'const/dbTables';
 import { IGetListResult } from 'interfaces/todoList';
 import CreateElementDto from 'dto/createElement.dto';
 import { IMessageResponse } from 'interfaces/common';
-import { ICreatedElementResult } from 'controllers/list.controller';
+import {
+  ICreatedElementResult,
+  ISwitchStatusResult,
+} from 'controllers/list.controller';
 
 @Injectable()
 class ListService {
@@ -23,23 +28,27 @@ class ListService {
     @Inject(dbTables.TODO_TABLE)
     private todoTable: typeof Todo,
   ) {}
-  async getList(@Req() req): Promise<IGetListResult> {
+  async getList(@Req() req, changedDate?: string): Promise<IGetListResult> {
     const userId = req?.userId;
 
     if (!userId) {
       throw new InternalServerErrorException('User doesnt provided');
     }
 
-    const listOfUsers: any = await this.todoTable.findAll({
+    const listOfTodos: any = await this.todoTable.findAll({
       where: {
         idOfUser: userId,
+        scheduleAt: {
+          [Op.gt]: moment(changedDate).format('YYYY-MM-DD 00:00'),
+          [Op.lte]: moment(changedDate).format('YYYY-MM-DD 23:59'),
+        },
       },
-      attributes: ['id', 'value', 'scheduleAt'],
-      order: ['id'],
+      attributes: ['id', 'value', 'isCompleted', 'scheduleAt'],
+      order: ['scheduleAt'],
     });
 
     return {
-      data: listOfUsers,
+      data: listOfTodos,
     };
   }
 
@@ -91,6 +100,7 @@ class ListService {
     await element.update({
       value,
       scheduleAt,
+      isCompleted: false,
     });
 
     return {
@@ -122,6 +132,41 @@ class ListService {
 
     return {
       message: 'Element deleted',
+    };
+  }
+
+  async switchElementStatus(
+    @Req() req,
+    id: string,
+  ): Promise<ISwitchStatusResult> {
+    const userId = req?.userId;
+
+    if (!id) {
+      throw new BadRequestException('Id doesnt provided');
+    }
+
+    const element = await this.todoTable.findOne({
+      where: {
+        idOfUser: userId,
+        id,
+      },
+    });
+
+    if (!element) {
+      throw new NotFoundException('Element not found');
+    }
+
+    const elementData = element?.get();
+    const { isCompleted, scheduleAt, userEmail } = elementData;
+
+    await element.update({
+      isCompleted: !isCompleted,
+    });
+
+    return {
+      newStatus: !isCompleted,
+      scheduleAt,
+      userEmail,
     };
   }
 }

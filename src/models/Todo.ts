@@ -26,6 +26,10 @@ export default class Todo extends Model {
   @Column
   scheduleAt: Date;
 
+  @Default(false)
+  @Column
+  isCompleted: boolean;
+
   @ForeignKey(() => User)
   @Column
   idOfUser: string;

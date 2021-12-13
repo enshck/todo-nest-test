@@ -14,4 +14,5 @@ export const listPaths = {
   UPDATE_ELEMENT: 'updateElement',
   CREATE_ELEMENT: 'createElement',
   DELETE_ELEMENT: 'deleteElement',
+  SWITCH_ELEMENT_STATUS: 'switchElementStatus',
 };

@@ -40,6 +40,7 @@ export class BullService {
             [Op.gt]: moment().format('YYYY-MM-DD HH:mm'),
             [Op.lte]: moment().format('YYYY-MM-DD 23:59'),
           },
+          isCompleted: false,
         },
         include: ['User'],
       });

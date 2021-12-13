@@ -2,10 +2,14 @@ import { Controller, Post, UsePipes, Body, Headers, Get } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
-  ApiResponse,
   ApiTags,
   ApiProperty,
   ApiHeader,
+  ApiOkResponse,
+  ApiBadRequestResponse,
+  ApiInternalServerErrorResponse,
+  ApiUnauthorizedResponse,
+  ApiNotFoundResponse,
 } from '@nestjs/swagger';
 
 import AuthService from 'providers/auth.service';
@@ -14,6 +18,7 @@ import { registrationSchema } from 'validation/auth';
 import JoiValidationPipe from 'pipes/joiValidation.pipe';
 import createUserDto from 'dto/createUser.dto';
 import { IAuthResult } from 'interfaces/auth';
+import { IMessageResponse, MessageResponse } from 'interfaces/common';
 
 class LoginResponse {
   @ApiProperty()
@@ -33,13 +38,12 @@ class AuthController {
 
   // SWAGGER
   @ApiOperation({ summary: 'Registration' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     type: LoginResponse,
     description: 'Sign up',
   })
-  @ApiResponse({ status: 400, description: 'User already exist' })
-  @ApiResponse({ status: 500, description: 'Internal server Error' })
+  @ApiBadRequestResponse({ description: 'User already exist' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server Error' })
   // SWAGGER
   @Post(authPaths.REGISTRATION)
   @UsePipes(new JoiValidationPipe(registrationSchema))
@@ -52,15 +56,14 @@ class AuthController {
 
   // SWAGGER
   @ApiOperation({ summary: 'Login' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     type: LoginResponse,
     description: 'Successful login',
   })
-  @ApiResponse({ status: 400, description: 'Unknown device' })
-  @ApiResponse({ status: 401, description: 'Invalid Credentials' })
-  @ApiResponse({ status: 404, description: 'User Not Found' })
-  @ApiResponse({ status: 500, description: 'Internal server Error' })
+  @ApiBadRequestResponse({ description: 'Unknown device' })
+  @ApiUnauthorizedResponse({ description: 'Invalid Credentials' })
+  @ApiNotFoundResponse({ description: 'User Not Found' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server Error' })
   // SWAGGER
   @Post(authPaths.LOGIN)
   @UsePipes(new JoiValidationPipe(registrationSchema))
@@ -73,20 +76,22 @@ class AuthController {
 
   // SWAGGER
   @ApiOperation({ summary: 'Logout' })
-  @ApiResponse({
-    status: 200,
-    description: 'User logouted',
-  })
   @ApiHeader({
     name: 'user-agent',
     description: 'For device definition',
     required: true,
   })
-  @ApiResponse({ status: 400, description: 'Incorrect token' })
-  @ApiResponse({ status: 500, description: 'Internal server Error' })
+  @ApiOkResponse({
+    description: 'User logouted',
+    type: MessageResponse,
+  })
+  @ApiBadRequestResponse({ description: 'Incorrect token' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server Error' })
   // SWAGGER
   @Get(authPaths.LOGOUT)
-  async logout(@Headers('authorization') token: string): Promise<string> {
+  async logout(
+    @Headers('authorization') token: string,
+  ): Promise<IMessageResponse> {
     return this.authService.logout(token);
   }
 }

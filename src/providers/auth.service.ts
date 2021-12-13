@@ -19,6 +19,7 @@ import createUserDto from 'dto/createUser.dto';
 import variables from 'config/variables';
 import { IAuthResult, IUserModel } from 'interfaces/auth';
 import getDevice from 'utils/getDevice';
+import { IMessageResponse } from 'interfaces/common';
 
 @Injectable()
 class AuthService {
@@ -143,7 +144,7 @@ class AuthService {
     };
   }
 
-  async logout(token: string): Promise<string> {
+  async logout(token: string): Promise<IMessageResponse> {
     const existingToken = await this.tokenTable.findOne({
       where: {
         token,
@@ -156,7 +157,9 @@ class AuthService {
 
     await existingToken.destroy();
 
-    return 'User logouted';
+    return {
+      message: 'User logouted',
+    };
   }
 
   async removeUser(email: string) {

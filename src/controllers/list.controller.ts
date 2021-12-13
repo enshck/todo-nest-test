@@ -9,6 +9,7 @@ import {
   Delete,
   Query,
   UsePipes,
+  Patch,
 } from '@nestjs/common';
 import moment = require('moment');
 import {
@@ -21,6 +22,7 @@ import {
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiHeader,
+  ApiQuery,
 } from '@nestjs/swagger';
 
 import { controllerPaths, listPaths } from 'const/routes';
@@ -29,13 +31,19 @@ import ListService from 'providers/list.service';
 import { BullService } from 'providers/bull.service';
 import { IGetListResult } from 'interfaces/todoList';
 import CreateElementDto from 'dto/createElement.dto';
-import { IMessageResponse } from 'interfaces/common';
+import { IMessageResponse, MessageResponse } from 'interfaces/common';
 import { createElementSchema, updateElementSchema } from 'validation/todoList';
 import JoiValidationPipe from 'pipes/joiValidation.pipe';
 
 export interface ICreatedElementResult {
   userEmail: string;
   todoId: string;
+  scheduleAt: string;
+}
+
+export interface ISwitchStatusResult {
+  userEmail: string;
+  newStatus: boolean;
   scheduleAt: string;
 }
 class TodoElement {
@@ -78,6 +86,11 @@ class ListController {
 
   // SWAGGER
   @ApiOperation({ summary: 'Get list of todo elements' })
+  @ApiQuery({
+    name: 'date',
+    required: false,
+    type: 'string',
+  })
   @ApiOkResponse({
     type: TodoElementsResult,
   })
@@ -85,14 +98,18 @@ class ListController {
   // SWAGGER
   @Get(listPaths.GET_LIST)
   @UseGuards(AuthGuard)
-  async getList(@Req() req): Promise<IGetListResult> {
-    return this.listService.getList(req);
+  async getList(
+    @Req() req,
+    @Query('date') changedDate: string | undefined,
+  ): Promise<IGetListResult> {
+    return this.listService.getList(req, changedDate);
   }
 
   // SWAGGER
   @ApiOperation({ summary: 'Create Element' })
   @ApiCreatedResponse({
     description: 'Element Created',
+    type: MessageResponse,
   })
   @ApiInternalServerErrorResponse({ description: 'Internal Server Error' })
   // SWAGGER
@@ -121,6 +138,7 @@ class ListController {
   @ApiOperation({ summary: 'Update Element' })
   @ApiCreatedResponse({
     description: 'Element Updated',
+    type: MessageResponse,
   })
   @ApiNotFoundResponse({ description: 'Element not found' })
   @ApiInternalServerErrorResponse({ description: 'Internal Server Error' })
@@ -136,9 +154,12 @@ class ListController {
       await this.listService.updateElement(req, body);
 
     const isSameDate = moment(scheduleAt).isSame(moment(), 'date');
+    const isAfterCurrentMoment = moment(scheduleAt).isAfter(moment());
 
-    if (isSameDate && moment(scheduleAt).isAfter(moment())) {
+    if (isSameDate && isAfterCurrentMoment) {
       await this.bullService.updateJob(userEmail, todoId, scheduleAt);
+    } else {
+      await this.bullService.deleteJob(todoId);
     }
 
     return {
@@ -163,7 +184,43 @@ class ListController {
     await this.listService.deleteElement(req, id);
     await this.bullService.deleteJob(id);
     return {
-      message: 'Element deleted',
+      message: 'Element Deleted',
+    };
+  }
+
+  // SWAGGER
+  @ApiOperation({ summary: 'Switch todo element status' })
+  @ApiCreatedResponse({
+    description: 'Status updated',
+  })
+  @ApiNotFoundResponse({ description: 'Element not found' })
+  @ApiInternalServerErrorResponse({ description: 'Internal Server Error' })
+  // SWAGGER
+  @Patch(listPaths.SWITCH_ELEMENT_STATUS)
+  @UseGuards(AuthGuard)
+  async switchElementStatus(
+    @Req() req,
+    @Query('id') id: string,
+  ): Promise<IMessageResponse> {
+    const { newStatus, scheduleAt, userEmail } =
+      await this.listService.switchElementStatus(req, id);
+
+    const isSameDate = moment(scheduleAt).isSame(moment(), 'date');
+
+    if (!isSameDate) {
+      return {
+        message: 'Status Updated',
+      };
+    }
+
+    if (newStatus) {
+      await this.bullService.deleteJob(id);
+    } else {
+      await this.bullService.createJob(userEmail, id, scheduleAt);
+    }
+
+    return {
+      message: 'Status Updated',
     };
   }
 }

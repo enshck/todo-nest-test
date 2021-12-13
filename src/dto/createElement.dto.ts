@@ -15,4 +15,9 @@ export default class CreateElementDto {
     type: 'string',
   })
   scheduleAt: string;
+
+  @ApiProperty({
+    type: 'boolean',
+  })
+  isCompleted?: boolean;
 }
