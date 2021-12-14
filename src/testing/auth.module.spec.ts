@@ -60,9 +60,9 @@ describe('AuthController', () => {
 
   describe('authController-logout', () => {
     it('should return succesfull message', async () => {
-      expect(await authController.logout(registeredUser?.token)).toBe(
-        'User logouted',
-      );
+      expect(await authController.logout(registeredUser?.token)).toEqual({
+        message: 'User logouted',
+      });
 
       await authService.removeUser(email);
     });

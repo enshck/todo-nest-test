@@ -118,6 +118,25 @@ describe('ListContoller', () => {
     });
   });
 
+  describe('listController-switch-status', () => {
+    it('should return new data with switched status', async () => {
+      const getSwitchedElement = async () => {
+        const result = await listService.switchElementStatus(
+          {
+            userId: user.id,
+          },
+          todoElement.todoId,
+        );
+
+        return Object.keys(result).sort();
+      };
+
+      expect(await getSwitchedElement()).toEqual(
+        ['scheduleAt', 'newStatus', 'userEmail'].sort(),
+      );
+    });
+  });
+
   describe('listController-remove', () => {
     it('should return successful message', async () => {
       expect(
