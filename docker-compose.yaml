@@ -1,0 +1,22 @@
+version: '3.9'
+services:
+  backend:
+    build: .
+    ports:
+      - '5000:5000'
+    links:
+      - redis
+      - postgres
+  redis:
+    image: 'redis:alpine'
+  postgres:
+    image: 'postgres:alpine'
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=qweqweqwe
+      - POSTGRES_DB=to-do
+    ports:
+      - '5432:5432'
+    volumes:
+      - /sql/create_db.sql

@@ -12,6 +12,7 @@ export const databaseServices = [
     useFactory: async () => {
       const sequelize = new Sequelize({
         dialect: 'postgres',
+        host: 'postgres',
         database: variables.dbName,
         username: variables.dbUser,
         password: variables.dbPassword,
